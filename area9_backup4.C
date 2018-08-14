@@ -29,8 +29,21 @@ void recal_baseline(int samp_max,double &base,vector<int>& samps,double* ch1,TTr
 
 // calculate area, base, rms, overshoot and amp
 // ii is the event id and gg is the index of channel id
-void calculate(TTree *LSDetector,int ii,int gg,double& area_new,double& area_old,double& base_new,double& base_old,double& rms_new,double& overshoot_new,double& amp,double* ch1,double* x_num,int ch_anode,int ch_dy9){
-
+void calculate(TTree *LSDetector,
+		int ii,
+		int gg,
+		double& area_new,
+		double& area_old,
+		double& base_new,
+		double& base_old,
+		double& rms_new,
+		double& overshoot_new,
+		double& amp,
+		double* ch1,
+		double* x_num,
+		int ch_anode,
+		int ch_dy9)
+{
 
 	vector<int> samps;
 
@@ -317,7 +330,20 @@ int main(int argc,char **argv)
     for(int ii=0;ii<Entries;ii++){
 	evtNo = ii;
 	for(int gg=0;gg<cc;gg++){
-    		calculate(LSDetector,ii,gg,Area_new[gg],Area_old[gg],Base_new[gg],Base_old[gg],Rms_new[gg],Overshoot_new[gg],Amp[gg],Ch1[gg],X_num[gg],ch_anode,ch_dy9);
+    		calculate(LSDetector,
+				ii,
+				gg,
+				Area_new[gg],
+				Area_old[gg],
+				Base_new[gg],
+				Base_old[gg],
+				Rms_new[gg],
+				Overshoot_new[gg],
+				Amp[gg],Ch1[gg],
+				X_num[gg],
+				ch_anode,
+				ch_dy9);
+
 		h[gg]->Fill(Area_new[gg]);
 	}
 	out_tree->Fill();
