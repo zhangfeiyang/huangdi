@@ -1,4 +1,7 @@
 #include "rootheader.h"
+
+// modified by Feiyang Zhang 2018.8.14
+
 int l_border = 0;
 int r_border = 0;
 
@@ -24,6 +27,8 @@ void recal_baseline(int samp_max,double &base,vector<int>& samps,double* ch1,TTr
 
 }
 
+// calculate area, base, rms, overshoot and amp
+// ii is the event id and gg is the index of channel id
 void calculate(TTree *LSDetector,int ii,int gg,double& area_new,double& area_old,double& base_new,double& base_old,double& rms_new,double& overshoot_new,double& amp,double* ch1,double* x_num,int ch_anode,int ch_dy9){
 
 
@@ -56,7 +61,7 @@ void calculate(TTree *LSDetector,int ii,int gg,double& area_new,double& area_old
         int samp_min;
         int samp_max;
 
-        if(chan[gg] != ch_anode && chan[gg] != ch_dy9) goto end;
+        if(chan[gg] != ch_anode && chan[gg] != ch_dy9) goto end;   // goto just like continue in a loop, it will skip to end of the function
 
         for(int xx=0; xx<1280; xx++)
         {
@@ -253,18 +258,6 @@ int main(int argc,char **argv)
     TFile *file = new TFile(file1,"read");
     TTree *LSDetector = (TTree*)file->Get("LSDetector");
 
-//int Entries = LSDetector->GetEntries();
-    vector<float> eventnum;//定义一个float的容器存eventnum
-    
-    double *base,*base_1,*area_1,*sum_peak,*sum;
-    base = new double[500000];
-    base_1 = new double[500000];
-    area_1 = new double[500000];
-    sum_peak = new double[500000];
-    sum = new double[500000];
-//int nsamps_new = 0;
-    double trigtime = LSDetector->GetMaximum("TriggerTime");
-
     TString fout_cut;
     if(LEDDR == 1)
         fout_cut = Form("/home/zhangfy/huangdi/root/%s-area9-led.root",runno.Data());
@@ -272,18 +265,16 @@ int main(int argc,char **argv)
         fout_cut = Form("/home/zhangfy/huangdi/root/%s-area9-dr.root",runno.Data());
     TFile *fout = new TFile(fout_cut,"recreate");
 
-    Int_t evtNo = 0;
-//for containing the value of the baseline samples
-    vector<int> samps;
-
-    TCanvas *myc = new TCanvas("myc","myc",1200,600);
-    myc->Divide(2,1);
-    gStyle->SetOptFit(1);
-
     LSDetector->GetEntry(0);
-    int cc = LSDetector->GetLeaf("nchs")->GetValue();
-    int *chan = new int[cc];
+    int cc = LSDetector->GetLeaf("nchs")->GetValue();   // get the number of channels
+    int *chan = new int[cc];                            // array of channel id 
 
+///// this is about definition of TTree and its branch for all channels
+//
+    TTree *out_tree = new TTree("out_tree","multi read out");
+
+// define the varible of TTree branch
+    int evtNo = 0;
     double* Area_new = new double[cc];
     double* Area_old = new double[cc];
     double* Base_new = new double[cc];
@@ -294,10 +285,8 @@ int main(int argc,char **argv)
     double** Ch1 = new double*[cc];
     double** X_num = new double*[cc];
 
-
-    TTree *out_tree = new TTree("out_tree","multi read out");
+// define the branch of TTree
     out_tree->Branch("evtNo",&evtNo,"evtNo/I");
-
     for(int gg=0; gg<cc; gg++){
 
 	chan[gg] = LSDetector->GetLeaf("chId")->GetValue(gg);
@@ -314,6 +303,10 @@ int main(int argc,char **argv)
         out_tree->Branch(Form("ch%d",chan[gg]),Ch1[gg],Form("ch%d[320]/D",chan[gg]));
         out_tree->Branch(Form("x_numch%d",chan[gg]),X_num[gg],Form("x_numch%d[320]/D",chan[gg]));
     }
+///////////////////////////////////////////////////////////////////
+////////////////////////////
+
+
     int Entries = LSDetector->GetEntries();
 
     TH1F **h;
